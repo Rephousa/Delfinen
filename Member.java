@@ -37,7 +37,7 @@ public class Member {
     }
 
     public void setID() throws Exception {
-        input = new Scanner(new File("./resources/member.dat"));
+        input = new Scanner(new File("member.dat"));
 
         this.ID = 0;
 
@@ -147,14 +147,14 @@ public class Member {
     }
 
     public void saveNewMember() throws Exception {
-        input = new Scanner(new File("./resources/member.dat"));
+        input = new Scanner(new File("member.dat"));
         String temp = "";
 
         while(input.hasNextLine()) {
             temp += "#"+input.nextInt()+" "+input.next()+" "+input.next()+" "+input.next()+" "+input.nextInt()+" "+input.next()+" "+input.nextLong()+" "+input.nextInt()+" "+input.nextBoolean()+" "+input.nextBoolean()+" "+input.nextBoolean()+" "+input.nextBoolean()+" "+input.nextBoolean();
         }
 
-        PrintStream printStream = new PrintStream(new File("./resources/member.dat"));
+        PrintStream printStream = new PrintStream(new File("member.dat"));
 
         if(temp.length() != 0) {
             while (temp.charAt(0) == '#') {
