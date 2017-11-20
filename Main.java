@@ -4,14 +4,13 @@ import java.util.Scanner;
 
 public class Main {
     public static boolean programRunning = true;
-    public static String user = "";
 
     public static void main(String[] args) throws  Exception {
-        System.out.println("Velkommen til Delfinen!\n");
+        System.out.println("Velkommen til Delfinen!");
 
         do { mainMenu(); } while(programRunning);
 
-        System.out.print("Farvel!");
+        System.out.print("Lukker og slukker! Farvel!");
     }
 
     public static void mainMenu() throws Exception {
@@ -19,18 +18,61 @@ public class Main {
         String inputString = "";
         boolean isInvalid;
 
-        //Menu
-        System.out.println("1 - Opret nyt medlem");
+        String[] commands = {"Medlem", "Luk"};
+        String[] descriptions = {"Opret, rediger, slet og se oversigter over medlemmere", "Lukker og afslutter programmet"};
+        printMenu(commands, descriptions);
 
         do {
-            isInvalid = false;
+            isInvalid = true;
 
             inputString = input.next();
 
-            if(inputString.equals("1")) {
-                createNewMember(input);
+            if(inputString.equalsIgnoreCase("medlem")) {
+                subMenu(input, "medlem");
+            } else if(inputString.equalsIgnoreCase("luk")) {
+                programRunning = false;
+                isInvalid = false;
+            } else {
+                System.out.println("Ugyldig kommando!");
             }
         } while (isInvalid);
+    }
+
+    public static void subMenu(Scanner input, String name) throws Exception {
+        input = new Scanner(System.in);
+        String inputString = "";
+        boolean isInvalid;
+
+        String[] commands = {"Opret", "Rediger", "Slet", "Tilbage"};
+        String[] descriptions = {"Opret et nyt medlem", "Rediger et medlem", "Slet et medlem", "Gå tilbage til hovedmenuen"};
+        printMenu(commands, descriptions);
+
+        do {
+            isInvalid = true;
+
+            inputString = input.next();
+
+            if(inputString.equalsIgnoreCase("opret")) {
+                createNewMember(input);
+            } else if(inputString.equalsIgnoreCase("rediger")) {
+            } else if(inputString.equalsIgnoreCase("slet")) {
+            } else if(inputString.equalsIgnoreCase("tilbage")) {
+                isInvalid = false;
+            } else {
+                System.out.println("Ugyldig kommando!");
+            }
+        } while(isInvalid);
+    }
+
+    public static void printMenu(String[] commands, String[] descriptions) {
+        System.out.println();
+        System.out.printf("%-40s %-40s\n", "Kommando:", "Beskrivelse:");
+        System.out.printf("%-40s %-40s\n", "--------", "------------");
+        System.out.println();
+
+        for(int i = 0; i < commands.length; i++) {
+            System.out.printf("%-40s %-40s\n", commands[i], descriptions[i]);
+        }
     }
 
     public static void createNewMember(Scanner input) throws Exception {
@@ -103,6 +145,7 @@ public class Main {
                 }
             } catch (Exception e) {
                 System.out.println(question+" skal være et tal, prøv igen!");
+                isInvalid = true;
             }
         } while(isInvalid);
 
