@@ -1,6 +1,4 @@
-import java.io.File;
-import java.io.PrintStream;
-import java.util.Scanner;
+import java.io.*;
 
 public class Member {
     private int ID;
@@ -16,10 +14,12 @@ public class Member {
     private boolean isMotionist;
     private boolean isCompetitor;
     private boolean isInArrears;
-    private Scanner input;
+    private BufferedReader bufferedReader;
+    private Writer writer;
 
     public Member(String firstName, String lastName, String address, int zipcode, String city, long birthday, int telephoneNumber, boolean isActive, boolean isPassive, boolean isMotionist, boolean isCompetitor, boolean isInArrears) throws Exception {
         setID();
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
@@ -37,17 +37,20 @@ public class Member {
     }
 
     public void setID() throws Exception {
-        input = new Scanner(new File("member.dat"));
+        try {
+            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
 
-        this.ID = 0;
+            this.ID = 0;
 
-        while(input.hasNextLine()) {
-            this.ID = input.nextInt();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                this.ID = Integer.parseInt(line.substring(0, line.indexOf(" ")));
+            }
 
-            input.nextLine();
+            this.ID++;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        this.ID++;
     }
 
     public String getFirstName() {
@@ -147,25 +150,52 @@ public class Member {
     }
 
     public void saveNewMember() throws Exception {
-        input = new Scanner(new File("member.dat"));
         String temp = "";
 
-        while(input.hasNextLine()) {
-            temp += "#"+input.nextInt()+" "+input.next()+" "+input.next()+" "+input.next()+" "+input.nextInt()+" "+input.next()+" "+input.nextLong()+" "+input.nextInt()+" "+input.nextBoolean()+" "+input.nextBoolean()+" "+input.nextBoolean()+" "+input.nextBoolean()+" "+input.nextBoolean();
-        }
+        try {
+            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
 
-        PrintStream printStream = new PrintStream(new File("member.dat"));
-
-        if(temp.length() != 0) {
-            while (temp.charAt(0) == '#') {
-                temp = temp.substring(1, temp.length());
-
-                printStream.println(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#")) : temp.substring(0, temp.length()));
-
-                temp = temp.substring(temp.indexOf("#") < 0 ? 0 : temp.indexOf("#"), temp.length());
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                temp += "#" + line;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
-        printStream.print(ID+" "+firstName+" "+lastName+" "+address.replace(" ", "_")+" "+zipcode+" "+city+" "+birthday+" "+telephoneNumber+" "+isActive+" "+isPassive+" "+isMotionist+" "+isCompetitor+" "+isInArrears);
+        if(temp.length() != 0) {
+            try {
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("member.dat")), "UTF8"));
+
+                while (temp.charAt(0) == '#') {
+                    temp = temp.substring(1, temp.length());
+
+                    writer.write(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#"))+"\n" : temp.substring(0, temp.length())+"\n");
+
+                    temp = temp.substring(temp.indexOf("#") < 0 ? 0 : temp.indexOf("#"), temp.length());
+                }
+
+                writer.write(ID+" "+firstName+" "+lastName+" "+address.replace(" ", "_")+" "+zipcode+" "+city+" "+birthday+" "+telephoneNumber+" "+isActive+" "+isPassive+" "+isMotionist+" "+isCompetitor+" "+isInArrears);
+                writer.flush();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
