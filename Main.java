@@ -1,3 +1,5 @@
+package com.company;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
@@ -43,23 +45,31 @@ public class Main {
         String inputString = "";
         boolean isInvalid;
 
-        String[] commands = {"Opret", "Rediger", "Slet", "Tilbage"};
-        String[] descriptions = {"Opret et nyt medlem", "Rediger et medlem", "Slet et medlem", "Gå tilbage til hovedmenuen"};
-        printMenu(commands, descriptions);
-
         do {
             isInvalid = true;
 
-            inputString = input.next();
+            if(name.equals("medlem")) {
+                String[] commands = {"Opret", "Rediger", "Slet", "Tilbage"};
+                String[] descriptions = {"Opret et nyt medlem", "Rediger et medlem", "Slet et medlem", "Gå tilbage til hovedmenuen"};
+                printMenu(commands, descriptions);
 
-            if(inputString.equalsIgnoreCase("opret")) {
-                createNewMember(input);
-            } else if(inputString.equalsIgnoreCase("rediger")) {
-            } else if(inputString.equalsIgnoreCase("slet")) {
-            } else if(inputString.equalsIgnoreCase("tilbage")) {
-                isInvalid = false;
-            } else {
-                System.out.println("Ugyldig kommando!");
+                inputString = input.next();
+
+                if (inputString.equalsIgnoreCase("opret")) {
+                    createMember(input);
+                } else if (inputString.equalsIgnoreCase("rediger")) {
+                    editMember(input);
+                } else if (inputString.equalsIgnoreCase("slet")) {
+                    //TODO
+                } else if (inputString.equalsIgnoreCase("tilbage")) {
+                    isInvalid = false;
+                } else {
+                    System.out.println("Ugyldig kommando!");
+                }
+            } else if(name.equals("træning")) {
+                //TODO
+            } else if(name.equals("stævne")) {
+                //TODO
             }
         } while(isInvalid);
     }
@@ -75,7 +85,7 @@ public class Main {
         }
     }
 
-    public static void createNewMember(Scanner input) throws Exception {
+    public static void createMember(Scanner input) throws Exception {
         input = new Scanner(System.in);
 
         String firstName = returnString(input, "Fornavn", true);
@@ -94,6 +104,21 @@ public class Main {
         new Member(firstName, lastName, address, zipcode, city, birthday, phone, isActive, isPassive, isMotionist, isCompetitor, isInArrears);
 
         System.out.println("Medlemmet blev oprettet!");
+    }
+
+    public static void editMember(Scanner input) {
+        input = new Scanner(System.in);
+
+        Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
+        table.setPadding(0, 1);
+        table.setBorder(1, '+');
+
+        for(int i = 1; i <= Member.countMember(); i++) {
+            table.row(Member.getMemberForRow(i));
+        }
+
+        table.print();
+        System.out.println("");
     }
 
     public static String returnString(Scanner input, String question, boolean onlyLetters) {
