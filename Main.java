@@ -104,8 +104,10 @@ public class Main {
         System.out.println("Medlemmet blev oprettet!");
     }
 
-    public static void editMember(Scanner input) {
+    public static void editMember(Scanner input) throws Exception {
         input = new Scanner(System.in);
+        boolean isInvalid, doItAgain;
+        int inputInt;
 
         Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
         table.setPadding(0, 1);
@@ -117,6 +119,97 @@ public class Main {
 
         table.print();
         System.out.println("");
+
+        do{
+            isInvalid = false;
+
+            //Get ID
+            inputInt = enterID(input, "Indtast vedkommendes ID du ønsker at redigere i");
+
+            Member member = new Member(inputInt);
+
+            do {
+                doItAgain = false;
+
+                String[] commands = {"Fornavn", "Efternavn", "Adresse", "Postnr", "By", "Fødselsdato", "Telefon", "Medlemskab", "Type", "Kontingent", "Tilbage"};
+                String[] descriptions = {"Ændre fornavn", "Ændre efternavn", "Ændre adresse", "Ændre postnr", "Ændre by", "Ændre fødselsdato", "Ændre telefon", "Ændre medlemskab (Aktiv eller passiv)", "Ændre typee (Motionist eller konkurrence)", "Ændre kontingent (Betalt eller ikke betalt)", "Gå tilbage til menuen"};
+                printMenu(commands, descriptions);
+
+                do {
+                    isInvalid = false;
+
+                    String inputString = input.nextLine();
+
+                    switch (inputString.toUpperCase()) {
+                        case "FORNAVN":
+                            member.setFirstName(returnString(input, "Fornavn", true));
+                            break;
+                        case "EFTERNAVN":
+                            member.setLastName(returnString(input, "Efternavn", true));
+                            break;
+                        case "ADRESSE":
+                            member.setAddress(returnString(input, "Adresse", false));
+                            break;
+                        case "POSTNR":
+                            member.setZipcode(returnInt(input, "Postnr", false));
+                            break;
+                        case "BY":
+                            member.setCity(returnString(input, "By", false));
+                            break;
+                        case "FØDSELSDATO":
+                            member.setBirthday(returnLong(input, "Fødselsdato"));
+                            break;
+                        case "TELEFON":
+                            member.setTelephoneNumber(returnInt(input, "Telefon", true));
+                            break;
+                        case "MEDLEMSKAB":
+                            boolean isActive = returnBoolean(input, "Medlemskab - Skriv AKTIV eller PASSIV", "AKTIV", "PASSIV");
+                            member.setActive(isActive);
+                            member.setPassive(!isActive);
+                            break;
+                        case "TYPE":
+                            boolean isMotionist = returnBoolean(input, "Aktivitetesform - Skriv MOTIONIST eller KONKURRENCE", "MOTIONIST", "KONKURRENCE");
+                            member.setMotionist(isMotionist);
+                            member.setCompetitor(!isMotionist);
+                            break;
+                        case "KONTINGENT":
+                            member.setInArrears(returnBoolean(input, "Har vedkommende betalt kontingent - Skriv JA eller NEJ", "NEJ", "JA"));
+                            break;
+                        case "TILBAGE":
+                            break;
+                        default:
+                            System.out.println("Ugyldig kommando, prøv igen:");
+                            isInvalid = true;
+                    }
+                } while (isInvalid);
+
+                if(returnBoolean(input, "Vil du redigere mere for dett medlem? Skriv JA eller NEJ", "JA", "NEJ")) {
+                    doItAgain = true;
+                }
+            } while(doItAgain);
+
+            member.saveChanges();
+            System.out.println("Ændringerne blev gemt!");
+        } while(isInvalid);
+    }
+
+    public static int enterID(Scanner input, String question) {
+        input = new Scanner(System.in);
+        boolean isInvalid;
+        int returnInt;
+
+        do {
+            isInvalid = false;
+
+            returnInt = returnInt(input, question, false);
+
+            if(!Member.doesMemberExist(returnInt)) {
+                System.out.println("Den indtastede ID eksisterer ikke, prøv igen:");
+                isInvalid = true;
+            }
+        } while(isInvalid);
+
+        return returnInt;
     }
 
     public static String returnString(Scanner input, String question, boolean onlyLetters) {
