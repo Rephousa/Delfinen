@@ -214,9 +214,9 @@ public class Member {
                     temp = temp.substring(1, temp.length());
 
                     if(Integer.valueOf(temp.substring(0, temp.indexOf(" "))) == ID) {
-                        writer.write(ID+" "+firstName+" "+lastName+" "+address.replace(" ", "_")+" "+zipcode+" "+city+" "+birthday+" "+telephoneNumber+" "+isActive+" "+isPassive+" "+isMotionist+" "+isCompetitor+" "+isInArrears);
+                        writer.write(ID+" "+firstName+" "+lastName+" "+address.replace(" ", "_")+" "+zipcode+" "+city+" "+birthday+" "+telephoneNumber+" "+isActive+" "+isPassive+" "+isMotionist+" "+isCompetitor+" "+isInArrears+(count != Member.countMember() ? "\n" : ""));
                     } else {
-                        writer.write(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#")) + "\n" : temp.substring(0, temp.length()) + "\n");
+                        writer.write(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#")) + (count != Member.countMember() ? "\n" : "") : temp.substring(0, temp.length()));
                     }
 
                     temp = temp.substring(temp.indexOf("#") < 0 ? 0 : temp.indexOf("#"), temp.length());
