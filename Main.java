@@ -1,6 +1,5 @@
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
+import java.text.*;
+import java.util.*;
 
 public class Main {
     public static boolean programRunning = true;
@@ -18,8 +17,8 @@ public class Main {
         String inputString = "";
         boolean isInvalid;
 
-        String[] commands = {"Medlem", "Luk"};
-        String[] descriptions = {"Opret, rediger, slet og se oversigter over medlemmere", "Lukker og afslutter programmet"};
+        String[] commands = {"Medlem", "Træning", "Stævne", "Luk"};
+        String[] descriptions = {"Opret, rediger, slet og se oversigter over medlemmere", "Registrer traeningsresultat for konkurrencesvømmere", "Registrer staevneresultat for konkurrencesvømmmere", "Lukker og afslutter programmet"};
         printMenu(commands, descriptions);
 
         do {
@@ -27,8 +26,8 @@ public class Main {
 
             inputString = input.next();
 
-            if(inputString.equalsIgnoreCase("medlem")) {
-                subMenu(input, "medlem");
+            if(inputString.equalsIgnoreCase("medlem") || inputString.equalsIgnoreCase("træning") || inputString.equalsIgnoreCase("stævne")) {
+                subMenu(input, inputString.toLowerCase());
             } else if(inputString.equalsIgnoreCase("luk")) {
                 programRunning = false;
                 isInvalid = false;
@@ -47,26 +46,30 @@ public class Main {
             isInvalid = true;
 
             if(name.equals("medlem")) {
-                String[] commands = {"Opret", "Rediger", "Slet", "Tilbage"};
-                String[] descriptions = {"Opret et nyt medlem", "Rediger et medlem", "Slet et medlem", "Gå tilbage til hovedmenuen"};
+                String[] commands = {"Oversigt", "Restance", "Opret", "Rediger", "Slet", "Tilbage"};
+                String[] descriptions = {"Se en liste over medlemmere og hvor meget de skal betale i kontingent", "Se en oversigt over medlemmere i restance", "Opret et nyt medlem", "Rediger et medlem", "Slet et medlem", "Gå tilbage til hovedmenuen"};
                 printMenu(commands, descriptions);
 
                 inputString = input.next();
 
-                if (inputString.equalsIgnoreCase("opret")) {
+                if(inputString.equalsIgnoreCase("oversigt")) {
+                    //seeOverview(input);
+                } else if (inputString.equalsIgnoreCase("restance")) {
+                    //seeArrears(input);
+                } else if (inputString.equalsIgnoreCase("opret")) {
                     createMember(input);
                 } else if (inputString.equalsIgnoreCase("rediger")) {
                     editMember(input);
                 } else if (inputString.equalsIgnoreCase("slet")) {
-                    //TODO
+                    deleteMember(input);
                 } else if (inputString.equalsIgnoreCase("tilbage")) {
                     isInvalid = false;
                 } else {
                     System.out.println("Ugyldig kommando!");
                 }
             } else if(name.equals("træning")) {
-                //TODO
-            } else if(name.equals("stævne")) {
+                createTrainingResult(input);
+            } else if(name.equals("staevne")) {
                 //TODO
             }
         } while(isInvalid);
@@ -86,11 +89,11 @@ public class Main {
     public static void createMember(Scanner input) throws Exception {
         input = new Scanner(System.in);
 
-        String firstName = returnString(input, "Fornavn", true);
-        String lastName = returnString(input, "Efternavn", true);
-        String address = returnString(input, "Adresse", false);
+        String firstName = returnString(input, "Fornavn", true, false);
+        String lastName = returnString(input, "Efternavn", true, false);
+        String address = returnString(input, "Adresse", false, false);
         int zipcode = returnInt(input, "Postnummer", false);
-        String city = returnString(input, "By", false);
+        String city = returnString(input, "By", false, false);
         long birthday = returnLong(input, "Foedselsdato");
         int phone = returnInt(input, "Telefon", true);
         boolean isActive = returnBoolean(input, "Medlemskab - Skriv AKTIV eller PASSIV", "AKTIV", "PASSIV");
@@ -111,7 +114,7 @@ public class Main {
 
         Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
         table.setPadding(0, 1);
-        table.setBorder(1, '+');
+        table.setBorder(1, '#');
 
         for(int i = 1; i <= Member.countMember(); i++) {
             table.row(Member.getMemberForRow(i));
@@ -120,11 +123,11 @@ public class Main {
         table.print();
         System.out.println("");
 
-        do{
+        do {
             isInvalid = false;
 
             //Get ID
-            inputInt = enterID(input, "Indtast vedkommendes ID du ønsker at redigere i");
+            inputInt = enterID(input, "Indtast vedkommendes ID du ønsker at redigere i", "member");
 
             Member member = new Member(inputInt);
 
@@ -142,19 +145,19 @@ public class Main {
 
                     switch (inputString.toUpperCase()) {
                         case "FORNAVN":
-                            member.setFirstName(returnString(input, "Fornavn", true));
+                            member.setFirstName(returnString(input, "Fornavn", true, false));
                             break;
                         case "EFTERNAVN":
-                            member.setLastName(returnString(input, "Efternavn", true));
+                            member.setLastName(returnString(input, "Efternavn", true, false));
                             break;
                         case "ADRESSE":
-                            member.setAddress(returnString(input, "Adresse", false));
+                            member.setAddress(returnString(input, "Adresse", false, false));
                             break;
                         case "POSTNR":
                             member.setZipcode(returnInt(input, "Postnr", false));
                             break;
                         case "BY":
-                            member.setCity(returnString(input, "By", false));
+                            member.setCity(returnString(input, "By", false, false));
                             break;
                         case "FØDSELSDATO":
                             member.setBirthday(returnLong(input, "Fødselsdato"));
@@ -183,7 +186,7 @@ public class Main {
                     }
                 } while (isInvalid);
 
-                if(returnBoolean(input, "Vil du redigere mere for dett medlem? Skriv JA eller NEJ", "JA", "NEJ")) {
+                if(returnBoolean(input, "Vil du redigere mere for dette medlem? Skriv JA eller NEJ", "JA", "NEJ")) {
                     doItAgain = true;
                 }
             } while(doItAgain);
@@ -193,7 +196,36 @@ public class Main {
         } while(isInvalid);
     }
 
-    public static int enterID(Scanner input, String question) {
+    public static void deleteMember(Scanner input) throws Exception {
+        input = new Scanner(System.in);
+
+        Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
+        table.setPadding(0, 1);
+        table.setBorder(1, '#');
+
+        for(int i = 1; i <= Member.countMember(); i++) {
+            table.row(Member.getMemberForRow(i));
+        }
+
+        table.print();
+        System.out.println("");
+
+        new Member(enterID(input, "Indtast vedkommendes ID du ønsker at slette", "member")).delete();
+        System.out.println("Medlemmet blev slettet!");
+    }
+
+    public static void createTrainingResult(Scanner input) throws Exception {
+        input = new Scanner(System.in);
+
+        int ID = enterID(input, "Medlemmets ID", "member");
+        String discipline = returnString(input, "Svømmedisciplin - Skriv BUTTERFLY, CRAWL, RYGCRAWL, BRYSTSVØMNING eller HUNDESVØMNING", true, true);
+        double trainingResult = returnDouble(input, "Traeningsresultat", true);
+        long date = returnLong(input, "Dato");
+
+        new Training(ID, discipline, trainingResult, date);
+    }
+
+    public static int enterID(Scanner input, String question, String file) {
         input = new Scanner(System.in);
         boolean isInvalid;
         int returnInt;
@@ -203,7 +235,7 @@ public class Main {
 
             returnInt = returnInt(input, question, false);
 
-            if(!Member.doesMemberExist(returnInt)) {
+            if(!Member.doesMemberExist(returnInt) && file.equals("member")) {
                 System.out.println("Den indtastede ID eksisterer ikke, prøv igen:");
                 isInvalid = true;
             }
@@ -212,7 +244,7 @@ public class Main {
         return returnInt;
     }
 
-    public static String returnString(Scanner input, String question, boolean onlyLetters) {
+    public static String returnString(Scanner input, String question, boolean onlyLetters, boolean isDiscipline) {
         input = new Scanner(System.in);
         boolean isInvalid;
         String returnValue = "";
@@ -227,6 +259,12 @@ public class Main {
             if(onlyLetters && !string.matches("[a-zA-Z]+")) {
                 isInvalid = true;
                 System.out.println(question+" må kun bestå af bogstaver fra A-Z, prøv igen!:");
+            } else if (isDiscipline) {
+                if (!(string.equalsIgnoreCase("butterfly") || string.equalsIgnoreCase("crawl") ||
+                        string.equalsIgnoreCase("rygcrawl") ||string.equalsIgnoreCase("brystsvomning") || string.equalsIgnoreCase("hundesvomning"))){
+                    System.out.println("Indtastede er ikke en gyldig svømmedisciplin - Prøv igen!\n" + question);
+                    isInvalid = true;
+                }
             } else {
                 returnValue = string;
             }
@@ -324,4 +362,40 @@ public class Main {
 
         return returnValue;
     }
+    public static double returnDouble(Scanner input, String question, boolean isTime){
+        input = new Scanner(System.in);
+        double returnValue = 0.00;
+        boolean isInvalid;
+
+
+        System.out.println(question+":");
+
+        do {
+            isInvalid = false;
+            String string = input.nextLine();
+
+            try {
+                double number = Double.parseDouble(string);
+                string = String.valueOf(new DecimalFormat("#.##").format(number)).replace(",", ".");
+                string += Double.parseDouble(string) * 100.00 % 10.00 == 0.00 ? "0" : "";
+                System.out.println(string);
+
+                if(number < 0){
+                    isInvalid = true;
+                    System.out.println(question+" skal være et positivt tal, prøv igen:");
+                } else if (isTime && Integer.parseInt(string.substring(string.length()-2, 0)) > 60) {
+
+                } else {
+                    returnValue = number;
+                }
+            } catch (Exception e) {
+                /*System.out.println(question+" skal være et tal, prøv igen!");
+                isInvalid = true;*/
+                e.printStackTrace();
+            }
+
+        }while(isInvalid);
+        return returnValue;
+    }
+
 }
