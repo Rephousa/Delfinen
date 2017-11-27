@@ -1,3 +1,5 @@
+package com.company;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,7 +46,7 @@ public class Member {
         this.ID = ID;
 
         try {
-            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
+            bufferedReader = new BufferedReader(new FileReader(new File(".member.dat")));
 
             String line;
             while((line = bufferedReader.readLine()) != null) {
@@ -73,6 +75,7 @@ public class Member {
                     this.isCompetitor = Boolean.valueOf(line.substring(0, line.indexOf(" ")));
                     line = line.substring(line.indexOf(" ")+1, line.length());
                     this.isInArrears = Boolean.valueOf(line.substring(0, line.length()));
+                    break;
                 }
             }
         } catch (Exception e) {
@@ -205,6 +208,7 @@ public class Member {
         String temp = "";
 
         temp = getContentFromFile();
+        int count = 1;
 
         if(temp.length() != 0) {
             try {
@@ -220,6 +224,7 @@ public class Member {
                     }
 
                     temp = temp.substring(temp.indexOf("#") < 0 ? 0 : temp.indexOf("#"), temp.length());
+                    count++;
                 }
 
                 writer.flush();
@@ -238,29 +243,57 @@ public class Member {
     }
 
     public void saveNewMember() throws Exception {
-        String temp = "";
+        String temp = getContentFromFile();
 
-        temp = getContentFromFile();
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("member.dat")), "UTF8"));
+
+            if(temp.length() != 0) {
+                while (temp.charAt(0) == '#') {
+                    temp = temp.substring(1, temp.length());
+
+                    writer.write(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#")) + "\n" : temp.substring(0, temp.length()) + "\n");
+
+                    temp = temp.substring(temp.indexOf("#") < 0 ? 0 : temp.indexOf("#"), temp.length());
+                }
+            }
+
+            writer.write(ID+" "+firstName+" "+lastName+" "+address.replace(" ", "_")+" "+zipcode+" "+city+" "+birthday+" "+telephoneNumber+" "+isActive+" "+isPassive+" "+isMotionist+" "+isCompetitor+" "+isInArrears);
+            writer.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void delete() {
+        String temp = getContentFromFile();
 
         if(temp.length() != 0) {
             try {
                 writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("member.dat")), "UTF8"));
 
-                while (temp.charAt(0) == '#') {
+                while(temp.charAt(0) == '#') {
                     temp = temp.substring(1, temp.length());
 
-                    writer.write(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#"))+"\n" : temp.substring(0, temp.length())+"\n");
+                    if(Integer.valueOf(temp.substring(0, temp.indexOf(" "))) != this.ID) {
+                        writer.write(temp.indexOf("#") >= 0 ? temp.substring(0, temp.indexOf("#")) + "\n" : temp.substring(0, temp.length()) + "\n");
+                    }
 
                     temp = temp.substring(temp.indexOf("#") < 0 ? 0 : temp.indexOf("#"), temp.length());
                 }
-
-                writer.write(ID+" "+firstName+" "+lastName+" "+address.replace(" ", "_")+" "+zipcode+" "+city+" "+birthday+" "+telephoneNumber+" "+isActive+" "+isPassive+" "+isMotionist+" "+isCompetitor+" "+isInArrears);
-                writer.flush();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (writer != null) {
+                    if(writer != null) {
                         writer.close();
                     }
                 } catch (Exception e) {
@@ -268,6 +301,8 @@ public class Member {
                 }
             }
         }
+
+        //TODO Call to delete trainingsresult and stævner
     }
 
     public static int countMember() {
