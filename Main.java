@@ -1,5 +1,13 @@
+package com.company;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.text.*;
 import java.util.*;
+
+import static com.company.FileHelper.getContentFromFile;
 
 public class Main {
     public static boolean programRunning = true;
@@ -17,12 +25,12 @@ public class Main {
         String inputString = "";
         boolean isInvalid;
 
-        String[] commands = {"Medlem", "Træning", "Stævne", "Luk"};
-        String[] descriptions = {"Opret, rediger, slet og se oversigter over medlemmere", "Registrer traeningsresultat for konkurrencesvømmere", "Registrer staevneresultat for konkurrencesvømmmere", "Lukker og afslutter programmet"};
-        printMenu(commands, descriptions);
-
         do {
             isInvalid = true;
+
+            String[] commands = {"Medlem", "Træning", "Stævne", "Luk"};
+            String[] descriptions = {"Opret, rediger, slet og se oversigter (og restance) over medlemmere", "Registrer traeningsresultat for konkurrencesvømmere", "Registrer staevneresultat for konkurrencesvømmmere", "Lukker og afslutter programmet"};
+            printMenu(commands, descriptions);
 
             inputString = input.next();
 
@@ -39,7 +47,7 @@ public class Main {
 
     public static void subMenu(Scanner input, String name) throws Exception {
         input = new Scanner(System.in);
-        String inputString = "";
+        String inputString;
         boolean isInvalid;
 
         do {
@@ -55,7 +63,7 @@ public class Main {
                 if(inputString.equalsIgnoreCase("oversigt")) {
                     //seeOverview(input);
                 } else if (inputString.equalsIgnoreCase("restance")) {
-                    //seeArrears(input);
+                    seeArrears(input);
                 } else if (inputString.equalsIgnoreCase("opret")) {
                     createMember(input);
                 } else if (inputString.equalsIgnoreCase("rediger")) {
@@ -68,8 +76,52 @@ public class Main {
                     System.out.println("Ugyldig kommando!");
                 }
             } else if(name.equals("træning")) {
-                createTrainingResult(input);
-            } else if(name.equals("staevne")) {
+                String[] commands = {"Top", "Opret", "Tilbage"};
+                String[] descriptions = {"Se en liste over top 5 af en svømmedisciplin", "Opret/opdater et træningsresultat", "Gå tilbage til hovedmenuen"};
+                printMenu(commands, descriptions);
+
+                inputString = input.next();
+
+                if(inputString.equalsIgnoreCase("top")) {
+                    String[] topCommands = {"Butterfly", "Crawl", "Rygcrawl", "Brystsvømning", "Hundesvømning", "Tilbage"};
+                    String[] topDescriptions = {"Top 5 svømmere i butterfly", "Top 5 svømmere i crawl", "Top 5 svømmere i rygcrawl", "Top 5 svømmere i brystsvømning", "Top 5 svømmere i hundesvømning", "Gå tilbage til hovedmenuen"};
+                    printMenu(topCommands, topDescriptions);
+                    boolean isSubInvalid ;
+
+                    do {
+                        isSubInvalid = true;
+
+                        inputString = input.next();
+
+                        if(inputString.equalsIgnoreCase("butterfly")) {
+                            Butterfly.getTopFive();
+                        } else if(inputString.equalsIgnoreCase("crawl")) {
+                            Crawl.getTopFive();
+                        } else if(inputString.equalsIgnoreCase("rygcrawl")) {
+                            Backstroke.getTopFive();
+                        } else if(inputString.equalsIgnoreCase("brystsvømning")) {
+                            BreastSwimming.getTopFive();
+                        } else if(inputString.equalsIgnoreCase("hundesvømning")) {
+                            DogPaddle.getTopFive();
+                        } else if(inputString.equalsIgnoreCase("tilbage")) {
+                            isSubInvalid = false;
+                        }  else if(!inputString.equalsIgnoreCase("butterfly") &&
+                                !inputString.equalsIgnoreCase("crawl") &&
+                                !inputString.equalsIgnoreCase("rygcrawl") &&
+                                !inputString.equalsIgnoreCase("brystsvømning") &&
+                                !inputString.equalsIgnoreCase("hundesvømning")) {
+                            System.out.println("Ugyldig kommando!");
+                        }
+                    } while(isSubInvalid);
+                } else if(inputString.equalsIgnoreCase("opret")) {
+                    createTrainingResult(input);
+                } else if(inputString.equalsIgnoreCase("tilbage")) {
+                    isInvalid = false;
+                } else {
+                    System.out.println("Ugyldig kommando!");
+                }
+
+            } else if(name.equals("stævne")) {
                 //TODO
             }
         } while(isInvalid);
@@ -129,6 +181,7 @@ public class Main {
             //Get ID
             inputInt = enterID(input, "Indtast vedkommendes ID du ønsker at redigere i", "member");
 
+            //Recieve info about memer from file
             Member member = new Member(inputInt);
 
             do {
@@ -211,21 +264,74 @@ public class Main {
         System.out.println("");
 
         new Member(enterID(input, "Indtast vedkommendes ID du ønsker at slette", "member")).delete();
+        //TODO
         System.out.println("Medlemmet blev slettet!");
     }
 
     public static void createTrainingResult(Scanner input) throws Exception {
         input = new Scanner(System.in);
 
-        int ID = enterID(input, "Medlemmets ID", "member");
-        String discipline = returnString(input, "Svømmedisciplin - Skriv BUTTERFLY, CRAWL, RYGCRAWL, BRYSTSVØMNING eller HUNDESVØMNING", true, true);
-        double trainingResult = returnDouble(input, "Traeningsresultat", true);
-        long date = returnLong(input, "Dato");
+        Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
+        table.setPadding(0, 1);
+        table.setBorder(1, '#');
 
-        new Training(ID, discipline, trainingResult, date);
+        for(int i = 1; i <= Member.countMember(); i++) {
+            table.row(Member.getMemberForRow(i));
+        }
+
+        table.print();
+        System.out.println("");
+
+        new Training(enterID(input, "Medlemmets ID", "member"),
+                returnString(input, "Svømmedisciplin - Skriv BUTTERFLY, CRAWL, RYGCRAWL, BRYSTSVØMNING eller HUNDESVØMNING", true, true),
+                returnDouble(input, "Træningsresultat", true),
+                returnLong(input, "Dato"));
     }
 
-    public static int enterID(Scanner input, String question, String file) {
+    public static void seeArrears(Scanner input) throws Exception{
+        BufferedReader br = null;
+
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream("./resources/member.dat")));
+
+            Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
+            table.setPadding(0, 1);
+            table.setBorder(1, '+');
+
+            String strLine = "";
+            boolean noMembers = true;
+            int count = 1;
+
+            //læs filen linje efter linje
+            while ((strLine = br.readLine()) != null) {
+                if (strLine.substring(strLine.lastIndexOf(' ') + 1, strLine.length()).equals("true")) {
+                    table.row(Member.getMemberForRow(count));
+                    noMembers = false;
+                }
+
+                count++;
+            }
+
+            //print hvis ingen er i restance
+            if(noMembers) {
+                System.out.println("Ingen medlemmer er i restance!");
+            } else {
+                table.print();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(br != null) {
+                    br.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static int enterID(Scanner input, String question, String file) throws Exception {
         input = new Scanner(System.in);
         boolean isInvalid;
         int returnInt;
@@ -235,7 +341,7 @@ public class Main {
 
             returnInt = returnInt(input, question, false);
 
-            if(!Member.doesMemberExist(returnInt) && file.equals("member")) {
+            if(!FileHelper.doesIDExist("./resources/member.dat", returnInt) && file.equals("member")) {
                 System.out.println("Den indtastede ID eksisterer ikke, prøv igen:");
                 isInvalid = true;
             }
@@ -259,12 +365,11 @@ public class Main {
             if(onlyLetters && !string.matches("[a-zA-Z]+")) {
                 isInvalid = true;
                 System.out.println(question+" må kun bestå af bogstaver fra A-Z, prøv igen!:");
-            } else if (isDiscipline) {
-                if (!(string.equalsIgnoreCase("butterfly") || string.equalsIgnoreCase("crawl") ||
-                        string.equalsIgnoreCase("rygcrawl") ||string.equalsIgnoreCase("brystsvomning") || string.equalsIgnoreCase("hundesvomning"))){
-                    System.out.println("Indtastede er ikke en gyldig svømmedisciplin - Prøv igen!\n" + question);
-                    isInvalid = true;
-                }
+            } else if (isDiscipline && (!(string.equalsIgnoreCase("butterfly") || string.equalsIgnoreCase("crawl") ||
+                    string.equalsIgnoreCase("rygcrawl") ||string.equalsIgnoreCase("brystsvømning") || string.equalsIgnoreCase("hundesvømning")))) {
+                System.out.println("Indtastede er ikke en gyldig svømmedisciplin - Prøv igen!\n");
+                isInvalid = true;
+
             } else {
                 returnValue = string;
             }
@@ -362,40 +467,37 @@ public class Main {
 
         return returnValue;
     }
+
     public static double returnDouble(Scanner input, String question, boolean isTime){
         input = new Scanner(System.in);
         double returnValue = 0.00;
         boolean isInvalid;
 
 
-        System.out.println(question+":");
+        System.out.println(question+" format: <MM.SS>:");
 
         do {
             isInvalid = false;
             String string = input.nextLine();
 
             try {
-                double number = Double.parseDouble(string);
-                string = String.valueOf(new DecimalFormat("#.##").format(number)).replace(",", ".");
-                string += Double.parseDouble(string) * 100.00 % 10.00 == 0.00 ? "0" : "";
-                System.out.println(string);
-
+                Double number = new Double(string).doubleValue();
                 if(number < 0){
                     isInvalid = true;
-                    System.out.println(question+" skal være et positivt tal, prøv igen:");
-                } else if (isTime && Integer.parseInt(string.substring(string.length()-2, 0)) > 60) {
+                    System.out.println(question+" format: <MM.SS> skal være et positivt tal, prøv igen:");
 
+                } else if (isTime && (Double.parseDouble(new DecimalFormat("#.##").format(number - number.intValue()).replace(",",".")) >= 0.60 ||  String.valueOf(number).replace(",",".").substring(String.valueOf(number).indexOf(".")+1).length() > 2)) {
+                    isInvalid = true;
+                    System.out.println(question + " format: <MM.SS> Prøv igen!");
                 } else {
                     returnValue = number;
                 }
             } catch (Exception e) {
-                /*System.out.println(question+" skal være et tal, prøv igen!");
-                isInvalid = true;*/
-                e.printStackTrace();
+                System.out.println(question+" skal være et tal, prøv igen!");
+                isInvalid = true;
             }
 
         }while(isInvalid);
         return returnValue;
     }
-
 }
