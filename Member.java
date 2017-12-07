@@ -1,6 +1,10 @@
+package com.company;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.company.FileHelper.getContentFromFile;
 
 public class Member {
     private int ID;
@@ -44,7 +48,7 @@ public class Member {
         this.ID = ID;
 
         try {
-            bufferedReader = new BufferedReader(new FileReader(new File(".member.dat")));
+            bufferedReader = new BufferedReader(new FileReader(new File("./resources/member.dat")));
 
             String line;
             while((line = bufferedReader.readLine()) != null) {
@@ -91,7 +95,7 @@ public class Member {
 
     private void setID() throws Exception {
         try {
-            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
+            bufferedReader = new BufferedReader(new FileReader(new File("./resources/member.dat")));
 
             this.ID = 0;
 
@@ -205,12 +209,12 @@ public class Member {
     public void saveChanges() throws Exception {
         String temp = "";
 
-        temp = getContentFromFile();
+        temp = getContentFromFile("./resources/member.dat");
         int count = 1;
 
         if(temp.length() != 0) {
             try {
-                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("member.dat")), "UTF8"));
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("./resources/member.dat")), "UTF8"));
 
                 while (temp.charAt(0) == '#') {
                     temp = temp.substring(1, temp.length());
@@ -241,10 +245,10 @@ public class Member {
     }
 
     public void saveNewMember() throws Exception {
-        String temp = getContentFromFile();
+        String temp = getContentFromFile("./resources/member.dat");
 
         try {
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("member.dat")), "UTF8"));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("./resources/member.dat")), "UTF8"));
 
             if(temp.length() != 0) {
                 while (temp.charAt(0) == '#') {
@@ -271,12 +275,12 @@ public class Member {
         }
     }
 
-    public void delete() {
-        String temp = getContentFromFile();
+    public void delete() throws Exception {
+        String temp = getContentFromFile("./resources/member.dat");
 
         if(temp.length() != 0) {
             try {
-                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("member.dat")), "UTF8"));
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("./resources/member.dat")), "UTF8"));
 
                 while(temp.charAt(0) == '#') {
                     temp = temp.substring(1, temp.length());
@@ -307,7 +311,7 @@ public class Member {
         int returnValue = 0;
 
         try {
-            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
+            bufferedReader = new BufferedReader(new FileReader(new File("./resources/member.dat")));
 
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -332,7 +336,7 @@ public class Member {
         String[] returnArray = new String[10];
 
         try {
-            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
+            bufferedReader = new BufferedReader(new FileReader(new File("./resources/member.dat")));
 
             String line;
             int rowNum = 1;
@@ -372,50 +376,5 @@ public class Member {
         }
 
         return returnArray;
-    }
-
-    public static boolean doesMemberExist(int ID) {
-        boolean returnValue = false;
-
-        try {
-            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
-
-            String line;
-            while((line = bufferedReader.readLine()) != null) {
-                if(Integer.valueOf(line.substring(0, line.indexOf(" "))) == ID) {
-                    returnValue = true;
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return returnValue;
-    }
-
-    public String getContentFromFile() {
-        String returnValue = "";
-
-        try {
-            bufferedReader = new BufferedReader(new FileReader(new File("member.dat")));
-
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                returnValue += "#" + line;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if(bufferedReader != null) {
-                    bufferedReader.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return returnValue;
     }
 }
