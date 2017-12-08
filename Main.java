@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.text.*;
 import java.util.*;
 
@@ -61,9 +62,9 @@ public class Main {
                 inputString = input.next();
 
                 if(inputString.equalsIgnoreCase("oversigt")) {
-                    //seeOverview(input);
+                    seeOverview();
                 } else if (inputString.equalsIgnoreCase("restance")) {
-                    seeArrears(input);
+                    seeArrears();
                 } else if (inputString.equalsIgnoreCase("opret")) {
                     createMember(input);
                 } else if (inputString.equalsIgnoreCase("rediger")) {
@@ -94,15 +95,15 @@ public class Main {
                         inputString = input.next();
 
                         if(inputString.equalsIgnoreCase("butterfly")) {
-                            Butterfly.getTopFive();
+                            //Butterfly.getTopFive();
                         } else if(inputString.equalsIgnoreCase("crawl")) {
-                            Crawl.getTopFive();
+                            //Crawl.getTopFive();
                         } else if(inputString.equalsIgnoreCase("rygcrawl")) {
-                            Backstroke.getTopFive();
+                            //Backstroke.getTopFive();
                         } else if(inputString.equalsIgnoreCase("brystsvømning")) {
-                            BreastSwimming.getTopFive();
+                            //BreastSwimming.getTopFive();
                         } else if(inputString.equalsIgnoreCase("hundesvømning")) {
-                            DogPaddle.getTopFive();
+                            //DogPaddle.getTopFive();
                         } else if(inputString.equalsIgnoreCase("tilbage")) {
                             isSubInvalid = false;
                         }  else if(!inputString.equalsIgnoreCase("butterfly") &&
@@ -122,7 +123,21 @@ public class Main {
                 }
 
             } else if(name.equals("stævne")) {
-                //TODO
+                String[] commands = {"Oversigt", "Opret", "Tilbage"};
+                String[] descriptions = {"Se en liste over medlemmeres stævner", "Opret et nyt stævneresultat", "Gå tilbage til hovedmenuen"};
+                printMenu(commands, descriptions);
+
+                inputString = input.next();
+
+                if(inputString.equalsIgnoreCase("oversigt")) {
+                    seeEventOverview();
+                } else if (inputString.equalsIgnoreCase("opret")) {
+                    createEvent(input);
+                } else if (inputString.equalsIgnoreCase("tilbage")) {
+                    isInvalid = false;
+                } else {
+                    System.out.println("Ugyldig kommando!");
+                }
             }
         } while(isInvalid);
     }
@@ -136,6 +151,50 @@ public class Main {
         for(int i = 0; i < commands.length; i++) {
             System.out.printf("%-40s %-40s\n", commands[i], descriptions[i]);
         }
+    }
+
+    public static void seeEventOverview() throws Exception {
+        Table table = new Table(new String[]{"ID:", "MedlemsID:", "Stævne:", "Placering:", "Tid:"}, new int[]{5, 15, 20, 20, 10});
+        table.setPadding(0, 1);
+        table.setBorder(1, '#');
+
+        for(int i = 1; i <= Event.countEvent(); i++) {
+            table.row(Event.getEventForRow(i));
+        }
+
+        table.print();
+    }
+
+    public static void createEvent(Scanner input) throws Exception {
+        Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Adresse:", "Postnr:", "By:", "Fødselsdato", "Telefon:", "Medlemskab:", "Type:"}, new int[]{5, 20, 20, 40, 10, 40, 20, 15, 20, 20});
+        table.setPadding(0, 1);
+        table.setBorder(1, '#');
+
+        for(int i = 1; i <= Member.countMember(); i++) {
+            table.row(Member.getMemberForRow(i));
+        }
+
+        table.print();
+        System.out.println("");
+
+        new Event(enterID(input, "Medlemmets ID", "member"),
+                returnString(input, "Stævne", false, false),
+                returnString(input, "Placering", false, false),
+                returnDouble(input, "Træningsresultat", true));
+
+        System.out.println("Stævnet blev registeret!");
+    }
+
+    public static void seeOverview() {
+        Table table = new Table(new String[]{"ID:", "Fornavn:", "Efternavn:", "Fødselsdato: ", "Kontingent:"}, new int[]{5, 20, 20, 20, 15});
+        table.setPadding(0, 1);
+        table.setBorder(1, '#');
+
+        for(int i = 1; i <= Member.countMember(); i++) {
+            table.row(Member.getSubscriptionForRow(i));
+        }
+
+        table.print();
     }
 
     public static void createMember(Scanner input) throws Exception {
@@ -288,7 +347,7 @@ public class Main {
                 returnLong(input, "Dato"));
     }
 
-    public static void seeArrears(Scanner input) throws Exception{
+    public static void seeArrears() throws Exception{
         BufferedReader br = null;
 
         try {
